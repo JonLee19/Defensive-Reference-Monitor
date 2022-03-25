@@ -1,0 +1,23 @@
+#to run:
+'''
+py -2 repy.py restrictions.default encasementlib.r2py securitylayer.py application.py
+'''
+
+if "testfile.txt.a" in listfiles():
+  removefile("testfile.txt.a")
+if "testfile.txt.b" in listfiles():
+  removefile("testfile.txt.b")
+myfile=ABopenfile("testfile.txt",True)  #Create an AB file
+
+# I should get 'SE' when reading an empty file...
+assert('SE' == myfile.readat(None,0))
+
+# put some valid data in the file.
+myfile.writeat("Stest12345E",0)
+
+# I should still get 'SE' because the file wasn't closed.
+assert('SE' == myfile.readat(None,0))
+
+#Close the file
+myfile.close()
+
