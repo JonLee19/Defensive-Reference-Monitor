@@ -17,93 +17,105 @@ TARGET="target"
 FUNC="func"
 OBJC="objc"
 
-
-
 class ABFile():
-  lock = createlock()
-  
   def __init__(self,filename,create):
     # globals
     mycontext['debug'] = False   
     # local (per object) reference to the underlying file
-    self.Afn = filename+'.a'
-    self.Bfn = filename+'.b'
-    self.filename = filename
-    #self.lock = createlock()
-    #if self.lock.acquire(True):
+    self.Afn = filename+'.a' #readat file: the backup
+    self.Bfn = filename+'.b' #writeat file: buffers all changes until close() is called
 
+    # Open/create the original file (to lock the filename from use by another program)
+    self.file = openfile(filename, create)
+
+    # File doesn't exist:
     # make the files and add 'SE' to the readat file...
     if create:
-      self.file = openfile(filename, True)
       self.Afile = openfile(self.Afn,create)
       self.Bfile = openfile(self.Bfn,create)
       self.Afile.writeat('SE',0)
-      self.Bfile.writeat('SE',0)
-      
-    #file already exists
-    else:
-    
-      self.file = openfile(filename, False)
-      #create temporary A and B files
-      self.Afile = openfile(self.Afn, True) 
-      self.Bfile = openfile(self.Bfn, True)
-      
-      #copy content of file to file A and file B
-      file_copy = self.file.readat(None,0)
-      self.Afile.writeat(file_copy,0)
-      self.Bfile.writeat(file_copy,0)
-      
+
+    # File already exists:
+    # create A and B files as copies of existing file's contents
+    else: 
+      file_contents = self.original_file.readat(None, 0)
+      try:
+        self.Afile = openfile(self.Afn, False)
+        self.Afile.writeat(file_contents, 0)
+
+        self.Bfile = openfile(self.Bfn, False)
+        self.Bfile.writeat(file_contents, 0)
+
+        if not (self.check_valid_Afile and self.check_valid_Bfile):
+          raise RepyArgumentError() #the original file contents are invalid
+
+      except FileInUseError as e: #.a and .b reference monitor files should not exist
+        #log(f".a and .b files already exist for {filename}") #NO OUTPUT
+        raise e
+
 
   def writeat(self,data,offset):
-    
     # Write the requested data to the B file using the sandbox's writeat call
-    if offset <= len(self.Bfile.readat(None,0)):
-      #def wrap_writeat():
-      #  self.Bfile.writeat(data,offset)
-      #lock = createlock()
-      #lock.acquire(True)
+    if offset < len(self.Bfile.readat(None,0)):
       self.Bfile.writeat(data,offset)
-      #createthread(wrap_writeat)
-      #lock.release()
-      
-    
+  
   def readat(self,bytes,offset):
     # Read from the A file using the sandbox's readat...
     return self.Afile.readat(bytes,offset)
 
   def close(self):
-    B_file_size = len(self.Bfile.readat(None, 0))
-    #check if first byte is S and last byte is E
-    if self.Bfile.readat(1, 0) == 'S' and self.Bfile.readat(1, B_file_size-1) == 'E': #file is valid
-      #copy content of file B to file
-      Bfile_copy = self.Bfile.readat(None,0)
-      self.file.writeat(Bfile_copy,0)
-      self.file.close() 
-    else:
-      #copy content of file A to file
-      Afile_copy = self.Afile.readat(None,0)
-      self.file.writeat(Afile_copy,0)
-      self.file.close() 
-    
-    #cleanup
+    #check if file contents are "safe" (begin with 'S' and end with 'E')
+    first_char = self.readat(1, 0);
+    file_length = len(self.readat(None,0));
+    last_char = self.readat(None, file_length-1);
+
+    # Passed safety check: Restore edited B file
+    if self.check_valid_Bfile:
+      file_contents = self.Bfile.readat(None,0)
+      self.file.writeat(file_contents,0)
+
+    # Failed safety check : Restore backup 'A' file
+    else: 
+      file_contents = self.Afile.readat(None,0)
+      self.file.writeat(file_contents,0)
+
+    # Save changes
+    self.file.close()
+
+    # Close and delete AB files
     self.Afile.close()
     self.Bfile.close()
-    ABFile.lock.release()
-      
-    #remove the temporary A and B files
-    if self.Afn in listfiles():
-      removefile(self.Afn)
-    if self.Bfn in listfiles():
-      removefile(self.Bfn)
+    removefile(self.Afn)
+    removefile(self.Bfn)
+
+  # Helper functions
+  def check_valid_Bfile(self):
+    # Check if file contents are "safe" (begin with 'S' and end with 'E')
+    first_char = self.Bfile.readat(1, 0);
+    file_length = len(self.Bfile.readat(None,0));
+    last_char = self.Bfile.readat(None, file_length-1);
+
+    if not (first_char == "S" and last_char == "E"): 
+      return False
+    # Add other conditions here
+    return True
+
+  def check_valid_Afile(self):
+    # Check if file contents are "safe" (begin with 'S' and end with 'E')
+    first_char = self.Afile.readat(1, 0);
+    file_length = len(self.Afile.readat(None,0));
+    last_char = self.Afile.readat(None, file_length-1);
+
+    if not (first_char == "S" and last_char == "E"): 
+      return False
+    # Add other conditions here
+    return True
 
     
+
+
 def ABopenfile(filename, create):
-  #lock = createlock()
-  if ABFile.lock.acquire(False):
-    return ABFile(filename,create)
-  else:
-    print("no lock!")
-    #lock.release()
+  return ABFile(filename,create)
 
 
 
@@ -112,8 +124,8 @@ def ABopenfile(filename, create):
 # should not need to change anything below here.
 sec_file_def = {"obj-type":ABFile,
                 "name":"ABFile",
-                "writeat":{"type":"func","args":(str,int),"exceptions":Exception,"return":(int,type(None)),"target":ABFile.writeat},
-                "readat":{"type":"func","args":((int,type(None)),(int)),"exceptions":Exception,"return":str,"target":ABFile.readat},
+                "writeat":{"type":"func","args":(str,(int,long)),"exceptions":Exception,"return":(int,type(None)),"target":ABFile.writeat},
+                "readat":{"type":"func","args":((int,long,type(None)),(int,long)),"exceptions":Exception,"return":str,"target":ABFile.readat},
                 "close":{"type":"func","args":None,"exceptions":None,"return":(bool,type(None)),"target":ABFile.close}
            }
 
