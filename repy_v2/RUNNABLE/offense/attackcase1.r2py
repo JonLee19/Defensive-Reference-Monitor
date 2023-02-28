@@ -16,13 +16,16 @@ if "testfile1.txt.b" in listfiles():
   
 # READ OPERATION
 # Reopen file again to read
-#myfile=ABopenfile("Ttestfile.txt",True)
-#myfile=ABopenfile("testfile.txt",True)
-myfile1=ABopenfile("testfile1.txt",False)
+# Ttestfile=ABopenfile("Ttestfile.txt",True)
+# testfile=ABopenfile("testfile.txt",True)
+try:
+  testfile1=ABopenfile("testfile1.txt",False)
+except FileNotFoundError:
+  log("PASSED | Non-existent file opened with create=False")
 
 try:
   #myfile=ABopenfile("testfile.txt",True)
-  myfile1=ABopenfile("testfile1.txt",True)
+  testfile1=ABopenfile("testfile1.txt",True)
   
   # put some invalid bad data in the file.
   #myfile.writeat("Stest12345E",20)

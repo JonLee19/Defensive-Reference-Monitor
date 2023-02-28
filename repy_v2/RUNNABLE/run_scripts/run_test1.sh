@@ -30,7 +30,7 @@ OFFENSE="attackcase.r2py"
 
 cd "$RUNNABLE"
 
-echo "Test Tutorial:"
+echo "|Test Tutorial:|"
 python "$RUN_REPY" "$RUNNABLE/tutorial/restrictions.test" "$RUNNABLE/tutorial/example.1.1.r2py"
 
 echo "Cleanup Previous Files"
