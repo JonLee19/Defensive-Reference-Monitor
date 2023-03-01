@@ -31,9 +31,10 @@ class ABFile():
         self.Bfile = openfile(self.Bfn, True)
         self.Afile.writeat('SE',0)
 
-      except (FileExistsError, FileInUseError, ResourceExhaustedError) as e:
+      except (FileInUseError, ResourceExhaustedError) as e: #FileExistsError
         # log(f"A and B Files named {filename} already exist")
-        return NotImplemented
+        log("NotImplemented\n")
+        raise e
 
       except RepyArgumentError as e:
         # log(f"{filename} is an invalid name or create is not a boolean type")

@@ -13,44 +13,7 @@ def cleanupAB(filename):
 cleanupAB("testfile.txt")
 cleanupAB("testfile1.txt")
     
-logln("Beginning Attack Case 4")
-
-#create test file
-testfile=ABopenfile("testfile.txt",True)  #Create an AB file
-
-# I should get 'SE' when reading an empty file...
-assert('SE' == testfile.readat(None,0))
-
-# put some valid data in the file.
-testfile.writeat("Stest12345E",0)
-
-testfile.close()
-  
-# testfile1=ABopenfile("testfile1.txt",True)
-
-try:  
-  # Try to write to file that has already been closed
-  testfile.writeat("Stest12345E",0)
-
-  # Try to read from file that has already been closed 
-  contents = testfile.readat(None, 0)
-
-  testfile.close() # if it doesn't error as its supposed to
-
-except (NameError, FileClosedError) as e:
-  logln("PASSED | Accessing File which has been closed already")
-  #testfile=ABopenfile("testfile.txt",True)  #Create an AB file
-
-
-else:
-  logln("FAILED | Non-existent file opened with create=False")
-  try:
-    testfile.close() #try closing again
-  except:
-    logln("Testfile {testfile} threw an exception when trying to close it because of the attempts to open invalid files")
-
-logln("Trying File Closed Error")
-quit
+logln("Beginning Attack Case 3 - Performing and Not Saving Invalid Writes")
 
 try:
   testfile1=ABopenfile("testfile1.txt",True)
@@ -59,6 +22,7 @@ try:
   testfile1.writeat("S1234567890E",20)
   testfile1.writeat("S12345E",0)
   testfile1.writeat("S",11)
+  
 
   try:
     testfile1.writeat(0x0001,"six") #invalid write, six is not numerical
@@ -68,7 +32,16 @@ try:
     logln("FAILED | Invalid write of non-numerical offset argument")
 
 
-  testfile1.close()
+  # TODO: ADD this line back in
+  # try:
+  #   testfile1.close()
+  # except FileClosedError:
+  #   logln("Some Error")
+
+
+  testfile1=ABopenfile("testfile1.txt",False)
+  # I should get 'SE' because the earlier edits were invalid
+  assert('SE' == testfile1.readat(None,0))
 
   #Invalid: Cannot Write after file close
   try: 
@@ -90,4 +63,4 @@ except:
   logln("Valid Data write to a file is unsuccessfull!")
 
 
-logln("End of Attack Case 4")
+logln("End of Attack Case 3")

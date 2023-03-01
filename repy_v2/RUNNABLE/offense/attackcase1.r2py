@@ -1,58 +1,65 @@
-log("Beginning Attack Case 1\n")
+def cleanup():
+  # Clean up of existing file
+  if "testfile.txt.a" in listfiles():
+    removefile("testfile.txt.a")
+  if "testfile.txt.b" in listfiles():
+    removefile("testfile.txt.b")
+  # Clean up of existing file
+  if "testfile1.txt.a" in listfiles():
+    removefile("testfile1.txt.a")
+  if "testfile1.txt.b" in listfiles():
+    removefile("testfile1.txt.b")
 
-# WRITE OPERATION
-# New File Operation
+cleanup()
 
-# Clean up of existing file
-if "testfile.txt.a" in listfiles():
-  removefile("testfile.txt.a")
-if "testfile.txt.b" in listfiles():
-  removefile("testfile.txt.b")
-# Clean up of existing file
-if "testfile1.txt.a" in listfiles():
-  removefile("testfile1.txt.a")
-if "testfile1.txt.b" in listfiles():
-  removefile("testfile1.txt.b")
+log("Beginning Attack Case 1 - Testing Invalid Arguments\n")
   
-# READ OPERATION
-# Reopen file again to read
-# Ttestfile=ABopenfile("Ttestfile.txt",True)
-# testfile=ABopenfile("testfile.txt",True)
 try:
-  testfile1=ABopenfile("testfile1.txt",False)
+  testfile1= ABopenfile("testfile1.txt",False)
 except FileNotFoundError:
-  log("PASSED | Non-existent file opened with create=False")
+  log("PASSED | Non-existent file opened with create=False\n")
+
+else:
+  log("FAILED | Non-existent file opened with create=False\n")
+  try:
+    testfile1.close()
+  except:
+    log("Testfile1 {testfile1} failed to close because it has value 0\n")
 
 try:
-  #myfile=ABopenfile("testfile.txt",True)
-  testfile1=ABopenfile("testfile1.txt",True)
-  
-  # put some invalid bad data in the file.
-  #myfile.writeat("Stest12345E",20)
-  #myfile1.writeat("S12345E",0)
-  #myfile1.writeat("S",11)
-  
-  myfile1.writeat("Stest12345E",0)
-  #Close the file
-  #myfile.close()
-  myfile1.writeat(myfile.readat(None,0), 0)
-  myfile1.close()
-  
-  myfile1=ABopenfile("testfile1.txt",True)
-  myfile1.writeat("S12345E",0)
-  myfile1.writeat("S1234567E",0)
-  #myfile1.writeat(0x0001,"six")
-  myfile1.close()
-  #Close again without open
-  #myfile1.writeat("S12345E",0)
-  #myfile1.close()
-  #Write after close
-  #myfile1.writeat(0x0001,0)
-  #myfile=ABopenfile("Ttestfile.txt",True)
-except:
-  #Close the file
-  #myfile.close()
-  myfile1.close()
-  log("Valid Data write to a file is unsuccessfull!")
+  testfile=ABopenfile("testfile.txt",True) #Valid filename
 
-log("Beginning Attack Case 1\n")
+  '''
+  Filenames may only be in the current directory and may only contain 
+  lowercase letters, numbers, the hyphen, underscore, and period characters. 
+  Also, filenames cannot be '.', '..', the blank string or start with a period. 
+  There is no concept of a directory or a folder in repy. 
+  Filenames must be no more than 120 characters long.
+  '''
+
+  testfile=ABopenfile(".",True) # Cannot be named .
+  testfile=ABopenfile("..",True) # Cannot be named ..
+  testfile=ABopenfile("",True) # Cannot be named blank string
+  testfile=ABopenfile(".testfile.txt",True) # Cannot start with .
+
+  testfile=ABopenfile("Ttestfile.txt",True) #No uppercase 
+  testfile=ABopenfile("sdfji_sdf.txt",True) #No underscores
+  testfile=ABopenfile("set*sdfdfs.txt",True) #No special chars
+  testfile=ABopenfile("set*/dfs.txt",True) #No special chars
+  testfile=ABopenfile("set\dfs.txt",True) #No special chars
+  testfile=ABopenfile("set\'dfs.txt",True) #No special chars
+
+  
+
+
+except RepyArgumentError:
+  log("PASSED | Disallowed Filenames \n")
+
+else:
+  log("FAILED | Non-existent file opened with create=False\n")
+  try:
+    testfile.close()
+  except:
+    log("Testfile {testfile} threw an exception when trying to close it because of the attempts to open invalid files\n")
+
+log("End of Attack Case 1\n")

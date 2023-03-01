@@ -1,21 +1,75 @@
-log("Beginning Attack Case 2\n")
+def logln(sentence):
+  log(sentence+"\n")
 
-if "testfile.txt.a" in listfiles():
-  removefile("testfile.txt.a")
-if "testfile.txt.b" in listfiles():
-  removefile("testfile.txt.b")
-myfile=ABopenfile("testfile.txt",True)  #Create an AB file
+def cleanupAB(filename):
+  Afn = filename+".a"
+  Bfn = filename+".b"
+  # Clean up of A and B files for existing files
+  if Afn in listfiles():
+    removefile(Afn)
+  if Bfn in listfiles():
+    removefile(Bfn)
+
+cleanupAB("testfile.txt")
+cleanupAB("testfile1.txt")
+    
+logln("Beginning Attack Case 2 - Opening Closed Files")
+
+#create test file
+testfile=ABopenfile("testfile.txt",True)  #Create an AB file
 
 # I should get 'SE' when reading an empty file...
-assert('SE' == myfile.readat(None,0))
+assert('SE' == testfile.readat(None,0))
 
 # put some valid data in the file.
-myfile.writeat("Stest12345E",0)
+testfile.writeat("Stest12345E",0)
 
-# I should still get 'SE' because the file wasn't closed.
-assert('SE' == myfile.readat(None,0))
+testfile.close()
+  
+try:  
+  # Try to write to file that has already been closed
+  testfile.writeat("Stest12345E",0)
 
-#Close the file
-myfile.close()
+  # Try to read from file that has already been closed 
+  contents = testfile.readat(None, 0)
 
-log("End of Attack Case 2\n")
+  testfile.close() # if it doesn't error as its supposed to
+
+except (NameError, FileClosedError) as e:
+  logln("PASSED | Accessing File which has been closed already")
+
+else:
+  logln("FAILED | Non-existent file opened with create=False")
+  try:
+    testfile.close() #try closing again
+  except:
+    logln("Testfile {testfile} threw an exception when trying to close it because of the attempts to open invalid files")
+
+
+try:
+  testfile1=ABopenfile("testfile1.txt",True)
+  
+  # put some invalid bad data in the file.
+  testfile1.writeat("S1234567890E",20)
+  testfile1.writeat("S12345E",0)
+  testfile1.writeat("S",11)
+
+  #myfile1.writeat(0x0001,"six") #invalid write, six is not numerical
+
+  testfile1.close()
+
+  #Write after close
+  #myfile1.writeat(0x0001,0)
+
+except:
+  try:
+    testfile1.close() #try closing again
+  except FileClosedError, NameError:
+    logln("PASSED | Closing File which has been closed already")
+  else:
+    logln("FAILED | Closing File which has been closed already")
+
+  logln("Valid Data write to a file is unsuccessfull!")
+
+
+logln("End of Attack Case 2")
