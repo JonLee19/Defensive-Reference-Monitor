@@ -1,10 +1,11 @@
 #!/bin/bash
-#run with command: 
-#sh 'C:/Users/leejo/Personal/Coding Projects/AB reference monitor/repy_v2/RUNNABLE/run_scripts/run_pt1.sh'
-#sh 'C:/Users/leejo/Personal/Coding Projects/AB reference monitor/repy_v2/RUNNABLE/run_pt1.sh'
 
+###!! DON'T FORGET TO ACTIVATE VENV !!
 ACTIVATE="C:/Users/leejo/Personal/Coding Projects/AB reference monitor/venv_py2/Scripts/activate"
 
+# Run with: sh 'C:/Users/leejo/Personal/Coding Projects/AB reference monitor/repy_v2/RUNNABLE/run_scripts/run_pt1.sh'
+
+# RepyV2 Files
 REPY_V2="C:/Users/leejo/Personal/Coding Projects/AB reference monitor/repy_v2"
 RUNNABLE="$REPY_V2/RUNNABLE"
 RUN_REPY="$RUNNABLE/repy.py"
@@ -26,9 +27,6 @@ OFFENSE4="$OFFENSE_DIR/attackcase4.r2py"
 # Generic to run the same script
 DEFENSE="defensive_reference_monitor.r2py"
 OFFENSE="attackcase.r2py"
-
-#echo "Activate Venv"
-#$activate #doesn't work through a bash shell rather than this parent terminal
 
 cd "$RUNNABLE"
 

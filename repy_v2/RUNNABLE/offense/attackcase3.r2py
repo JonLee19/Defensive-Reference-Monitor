@@ -32,21 +32,28 @@ try:
     logln("FAILED | Invalid write of non-numerical offset argument")
 
 
-  # TODO: ADD this line back in
+  #TODO: ADD this line back in
+  testfile1.close()
   # try:
-  #   testfile1.close()
+    
   # except FileClosedError:
   #   logln("Some Error")
 
-
   testfile1=ABopenfile("testfile1.txt",False)
-  # I should get 'SE' because the earlier edits were invalid
-  assert('SE' == testfile1.readat(None,0))
+
+  logln("test")
+
+  try:
+    # I should get 'SE' because the earlier edits were invalid
+    assert('SE' == testfile1.readat(None,0))
+  except FileClosedError:
+    logln("Cannot open file, closed already")
+
 
   #Invalid: Cannot Write after file close
   try: 
     testfile1.writeat(0x0001,0)
-  except Exception as e:
+  except RepyArgumentError as e:
     logln("PASSED | Write after file close")
   else:
     logln("FAILED | Write after file close")
