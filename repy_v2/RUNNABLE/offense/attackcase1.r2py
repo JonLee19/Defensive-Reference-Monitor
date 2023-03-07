@@ -1,5 +1,9 @@
 def cleanup():
   # Clean up of existing file
+  if "testfile.txt" in listfiles():
+    removefile("testfile.txt")
+  if "testfile1.txt" in listfiles():
+    removefile("testfile1.txt")
   if "testfile.txt.a" in listfiles():
     removefile("testfile.txt.a")
   if "testfile.txt.b" in listfiles():
@@ -24,7 +28,7 @@ else:
   try:
     testfile1.close()
   except:
-    log("Testfile1 {testfile1} failed to close because it has value 0\n")
+    log("Testfile1 "+str(testfile1)+" failed to close because it has value 0\n")
 
 try:
   testfile=ABopenfile("testfile.txt",True) #Valid filename
@@ -56,10 +60,10 @@ except RepyArgumentError:
   log("PASSED | Disallowed Filenames \n")
 
 else:
-  log("FAILED | Non-existent file opened with create=False\n")
+  log("FAILED | Disallowed Filenames\n")
   try:
     testfile.close()
   except:
-    log("Testfile {testfile} threw an exception when trying to close it because of the attempts to open invalid files\n")
+    log("Testfile "+str(testfile)+" threw an exception when trying to close it because of the attempts to open invalid files\n")
 
 log("End of Attack Case 1\n")

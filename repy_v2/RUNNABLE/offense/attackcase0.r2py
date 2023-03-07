@@ -1,4 +1,4 @@
-log("Beginning Attack Case 0\n")
+log("Beginning Attack Case 0 - Create File\n")
 
 #cleanup existing files
 if "testfile.txt.a" in listfiles():

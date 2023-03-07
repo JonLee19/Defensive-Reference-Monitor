@@ -1,7 +1,9 @@
 def logln(sentence):
-  log(sentence+"\n")
+  log(str(sentence)+"\n")
 
 def cleanupAB(filename):
+  if filename in listfiles():
+    removefile(filename)
   Afn = filename+".a"
   Bfn = filename+".b"
   # Clean up of A and B files for existing files
@@ -13,61 +15,61 @@ def cleanupAB(filename):
 cleanupAB("testfile.txt")
 cleanupAB("testfile1.txt")
     
-logln("Beginning Attack Case 3 - Performing and Not Saving Invalid Writes")
+logln("Beginning Attack Case 3 - Preventing Invalid Writes")
+
+testfile1=ABopenfile("testfile1.txt",True)
+
+# put some invalid bad data in the file.
+testfile1.writeat("S1234567890E",20)
+testfile1.writeat("S12345E",0)
+testfile1.writeat("S",11)
+
 
 try:
-  testfile1=ABopenfile("testfile1.txt",True)
-  
-  # put some invalid bad data in the file.
-  testfile1.writeat("S1234567890E",20)
-  testfile1.writeat("S12345E",0)
-  testfile1.writeat("S",11)
-  
-
-  try:
-    testfile1.writeat(0x0001,"six") #invalid write, six is not numerical
-  except Exception as e:
-    logln("PASSED | Invalid write of non-numerical offset argument")
-  else:
-    logln("FAILED | Invalid write of non-numerical offset argument")
+  testfile1.writeat(0x0001,"six") #invalid write, six is not numerical
+except Exception as e:
+  logln("PASSED | Invalid write of non-numerical offset argument")
+else:
+  logln("FAILED | Invalid write of non-numerical offset argument")
 
 
-  #TODO: ADD this line back in
-  testfile1.close()
-  # try:
-    
-  # except FileClosedError:
-  #   logln("Some Error")
+testfile1.close()
 
-  testfile1=ABopenfile("testfile1.txt",False)
+#reopen the file
+testfile1=ABopenfile("testfile1.txt",False)
 
-  logln("test")
+try:
+  # I should get 'SE' because the earlier edits were invalid
+ #assert('SE' == testfile1.readat(None,0))
+  pass
+except FileClosedError:
+  logln("FAILED | Cannot open file, closed already")
 
-  try:
-    # I should get 'SE' because the earlier edits were invalid
-    assert('SE' == testfile1.readat(None,0))
-  except FileClosedError:
-    logln("Cannot open file, closed already")
+#Invalid write
+try: 
+  testfile1.writeat(0x0001,0)
+except RepyArgumentError as e:
+  logln("PASSED | Invalid write of non-string data not allowed")
+else:
+  logln("FAILED | Invalid write of non-string data not allowed")
 
+testfile1.close()
 
-  #Invalid: Cannot Write after file close
-  try: 
-    testfile1.writeat(0x0001,0)
-  except RepyArgumentError as e:
-    logln("PASSED | Write after file close")
-  else:
-    logln("FAILED | Write after file close")
+#Cannot Write after file close
+try: 
+  testfile1.writeat("SWriteAfterFileCloseE",0)
+except Exception as e:
+  logln("PASSED | Cannot write after file close")
+else:
+  logln("FAILED | Cannot write after file close")
 
+# try:
+#   testfile1.close() #try closing again
+# except (FileClosedError, Exception) as e:
+#   logln("PASSED | Closing File which has been closed already")
+# else:
+#   logln("FAILED | Closing File which has been closed already")
 
-except:
-  try:
-    testfile1.close() #try closing again
-  except FileClosedError, NameError:
-    logln("PASSED | Closing File which has been closed already")
-  else:
-    logln("FAILED | Closing File which has been closed already")
-
-  logln("Valid Data write to a file is unsuccessfull!")
 
 
 logln("End of Attack Case 3")

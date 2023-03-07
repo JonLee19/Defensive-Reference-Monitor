@@ -1,7 +1,9 @@
 def logln(sentence):
-  log(sentence+"\n")
+  log(str(sentence)+"\n")
 
 def cleanupAB(filename):
+  if filename in listfiles():
+    removefile(filename)
   Afn = filename+".a"
   Bfn = filename+".b"
   # Clean up of A and B files for existing files

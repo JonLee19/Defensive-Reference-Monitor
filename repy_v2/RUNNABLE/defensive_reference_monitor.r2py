@@ -31,21 +31,15 @@ class ABFile():
         self.Bfile = openfile(self.Bfn, True)
         self.Afile.writeat('SE',0)
         self.Bfile.writeat('SE',0)
-        # log("AFile original contents: " + self.Afile.readat(None,0)+"\n")
-
-        # self.Afile.close()
-        # self.Afile = openfile(self.Afn, False)
-
-        # log("AFile after contents: " + self.Afile.readat(None,0)+"\n")
 
 
       except (FileInUseError, ResourceExhaustedError) as e: #FileExistsError
-        # log(f"A and B Files named {filename} already exist")
+        # log("A and B Files named "+filename" already exist\n")
         log("NotImplemented\n")
         raise e
 
       except RepyArgumentError as e:
-        # log(f"{filename} is an invalid name or create is not a boolean type")
+        # log(filename+" is an invalid name or create is not a boolean type\n")
         raise e
 
 
@@ -68,15 +62,18 @@ class ABFile():
           raise RepyArgumentError() 
         
       except FileClosedError as e:
-        log("File "+filename+" has already been created and closed, so it cannot be accessed with create=False flag\n")
+        if mycontext['debug'] == True:
+          log("File "+str(filename)+" has already been created and closed, so it cannot be accessed with create=False flag\n")
         raise e
 
       except FileNotFoundError as e:
-        log("File "+filename+" does not exist yet, but was accessed with create=False flag\n")
+        if mycontext['debug'] == True:
+          log("File "+str(filename)+" does not exist yet, but was accessed with create=False flag\n")
         raise e
 
       except FileInUseError as e: #.a and .b reference monitor files should not exist
-        log(".a and .b files already exist for "+filename+"\n")
+        if mycontext['debug'] == True:
+          log(".a and .b files already exist for "+str(filename)+"\n")
         raise e
 
 
@@ -96,30 +93,13 @@ class ABFile():
   def close(self):
     #check if file contents are "safe" (begin with 'S' and end with 'E')
 
-    # first_char=0
-    # last_char=0
-    # file_length = len(self.Bfile.readat(None,0));
-    # if (file_length == 0):
-    #   return False
-    
-    # first_char = self.Bfile.readat(1, 0);
-    # last_char = self.Bfile.readat(1, file_length-1);
-
-
-    # first_char = self.readat(1, 0)
-    # file_length = len(self.readat(None,0))
-    # last_char = self.readat(None, file_length-1)
-
     # Passed safety check: Restore edited B file
     if self.check_valid_Bfile():
-      log("INSIDE Valid B file\n")
       file_contents = self.Bfile.readat(None,0)
-      log("file_contents of Bfile: "+str(file_contents)+"\n")
       self.file.writeat(file_contents,0)
 
     # Failed safety check : Restore backup 'A' file
     else: 
-      log("INSIDE Invalid B file, restore A file\n")
       file_contents = self.Afile.readat(None,0)
       self.file.writeat(file_contents,0)
 
@@ -136,35 +116,17 @@ class ABFile():
 
   def check_valid_Bfile(self):
     # Check if file contents are "safe" (begin with 'S' and end with 'E')
-    log("Inside Check valid bfile. file contents: ")
-    log(self.Bfile.readat(None,0)+"\n")
-
-    log("Checking contents..\n")
-    log(type(self.Bfile.readat(None,0)))
-    # log(len(self.Bfile.readat(None,0)))
-    # file_length = len(self.Bfile.readat(None,0));
-    # log("testingggg")
-    # log("filelength: "+str(file_length)+"\n")
-
-    
-    try:
-      file_length = len(self.Bfile.readat(None,0));
-    except Exception as e:
-      log("What the\n")
-      raise e
-    log("filelength: "+str(file_length)+"\n")
-
+    file_length = len(self.Bfile.readat(None,0));
     if (file_length == 0):
       return False
     
     first_char = self.Bfile.readat(1, 0);
     last_char = self.Bfile.readat(1, file_length-1);
-
-    log("first char: "+str(first_char)+", file_length: "+str(file_length)+", last_char: "+str(last_char)+"\n")
-
     if not (first_char == "S" and last_char == "E"): 
       return False
+    
     # Add other conditions here
+
     return True
 
   def check_valid_Afile(self):
